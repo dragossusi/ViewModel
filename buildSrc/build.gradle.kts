@@ -1,7 +1,12 @@
-import org.gradle.kotlin.dsl.`kotlin-dsl`
 plugins {
     `kotlin-dsl`
 }
 repositories {
-    jcenter()
+    mavenCentral()
+    google()
+}
+val androidVersion = project.property("sevens.android.gradle.version").toString()
+
+dependencies {
+    implementation("com.android.tools.build:gradle:$androidVersion")
 }

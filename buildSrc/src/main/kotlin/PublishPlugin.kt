@@ -51,7 +51,6 @@ class PublishPlugin : Plugin<Project> {
                 }
             }
             setupRepos(project)
-            setupSigning()
         }
     }
 
@@ -85,22 +84,31 @@ class PublishPlugin : Plugin<Project> {
     }
 
     private fun PublishingExtension.setupRepos(project: Project) {
+        if (!project.hasSonatypeCredentials()) return
+        val sonatypeUsername = project.property("sonatype.username").toString()
+        val sonatypePassword = project.property("sonatype.password").toString()
         repositories {
             maven {
                 name = "sonatype"
                 url = project.uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
                 credentials {
-                    username = project.property("sonatype.username").toString()
-                    password = project.property("sonatype.password").toString()
+                    username = sonatypeUsername
+                    password = sonatypePassword
                 }
             }
         }
+        project.setupSigning()
     }
 
     private fun Project.setupSigning() {
         signing {
             sign(publishing.publications)
         }
+    }
+
+    private fun Project.hasSonatypeCredentials(): Boolean {
+        return project.hasProperty("sonatype.username") ||
+                project.hasProperty("sonatype.password")
     }
 
 }

@@ -16,23 +16,26 @@ java {
 
 kotlin {
 
-    android {
-        publishLibraryVariants("release", "debug")
+    if (Features.isAndroidEnabled) {
+        android {
+            publishLibraryVariants("release", "debug")
+        }
     }
     jvm()
+    js(IR)
 
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${project.coroutinesVersion}")
             }
         }
         val androidMain by getting {
             dependencies {
-                implementation("androidx.core:core-ktx:1.5.0")
-                implementation("androidx.appcompat:appcompat:1.3.0")
-                implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}")
+                implementation("androidx.core:core-ktx:1.7.0")
+                implementation("androidx.appcompat:appcompat:1.4.0")
+                api("androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}")
             }
         }
         val androidTest by getting {
@@ -46,34 +49,6 @@ kotlin {
     }
 }
 
-android {
-    compileSdkVersion(30)
-    buildToolsVersion("30.0.3")
-
-    defaultConfig {
-        minSdkVersion(16)
-        targetSdkVersion(30)
-        versionCode = 1
-        versionName = Versions.app
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
-    }
-
-    sourceSets {
-        getByName("main") {
-            manifest.srcFile("src/androidMain/AndroidManifest.xml")
-            java.srcDirs("src/androidMain/kotlin")
-            res.srcDirs("src/androidMain/res")
-        }
-        getByName("test") {
-            java.srcDirs("src/androidTest/kotlin")
-            res.srcDirs("src/androidTest/res")
-        }
-    }
-
-}
-
 publishing {
     publications {
         publications.withType<MavenPublication> {
@@ -81,9 +56,19 @@ publishing {
                 name.set("ViewModel")
                 description.set("ViewModel classes for easier usage in multiplatform projects")
                 url.set("https://github.com/dragossusi/Message-Data/")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
             }
         }
     }
+}
+
+if (Features.isAndroidEnabled) {
+    apply(plugin = "install-android")
 }
 
 apply<PublishPlugin>()

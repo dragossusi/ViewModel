@@ -4,7 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 
-actual abstract class ViewModel {
+actual abstract class CommonViewModel actual constructor() {
 
     protected val context = Job() + Dispatchers.IO
 
@@ -12,5 +12,5 @@ actual abstract class ViewModel {
 
 }
 
-actual val ViewModel.coroutineScope: CoroutineScope
+actual val CommonViewModel.coroutineScope: CoroutineScope
     get() = scope
