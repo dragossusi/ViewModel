@@ -1,14 +1,21 @@
 package ro.dragossusi
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import java.io.Closeable
+import java.io.IOException
+import java.lang.RuntimeException
 import kotlin.coroutines.CoroutineContext
 
 private const val JOB_KEY = "androidx.lifecycle.ViewModelCoroutineScope.JOB_KEY"
 
-actual abstract class CommonViewModel actual constructor() {
+actual abstract class KViewModel actual constructor() {
     // Can't use ConcurrentHashMap, because it can lose values on old apis (see b/37042460)
-    private val mBagOfTags: MutableMap<String, Any> = mutableMapOf()
+    private val mBagOfTags: MutableMap<String, Any> = HashMap()
 
+    @Volatile
     private var mCleared = false
 
     /**
@@ -18,7 +25,7 @@ actual abstract class CommonViewModel actual constructor() {
      * It is useful when ViewModel observes some data and you need to clear this subscription to
      * prevent a leak of this ViewModel.
      */
-    protected actual open fun onCleared() {}
+    protected open fun onCleared() {}
 
     fun clear() {
         mCleared = true
@@ -26,7 +33,7 @@ actual abstract class CommonViewModel actual constructor() {
         // and in those cases, mBagOfTags is null. It'll always be empty though
         // because setTagIfAbsent and getTag are not final so we can skip
         // clearing it
-        run<Unit> {
+        synchronized(mBagOfTags) {
             mBagOfTags.values.forEach { value ->
                 // see comment for the similar call in setTagIfAbsent
                 closeWithRuntimeException(value)
@@ -37,7 +44,7 @@ actual abstract class CommonViewModel actual constructor() {
 
     /**
      * Sets a tag associated with this viewmodel and a key.
-     * If the given `newValue` is [CoroutineScope],
+     * If the given `newValue` is [Closeable],
      * it will be closed once [.clear].
      *
      *
@@ -46,16 +53,16 @@ actual abstract class CommonViewModel actual constructor() {
      *
      *
      * If the ViewModel was already cleared then close() would be called on the returned object if
-     * it implements [CoroutineScope]. The same object may receive multiple close calls, so method
+     * it implements [Closeable]. The same object may receive multiple close calls, so method
      * should be idempotent.
      */
     open fun <T> setTagIfAbsent(key: String, newValue: T): T {
         var previous: T?
-        run<Unit> {
+        synchronized(mBagOfTags) {
             @Suppress("UNCHECKED_CAST")
             previous = mBagOfTags[key] as? T
             if (previous == null) {
-                mBagOfTags[key] = newValue as Any
+                mBagOfTags.put(key, newValue as Any)
             }
         }
         val result: T = previous ?: newValue
@@ -72,17 +79,17 @@ actual abstract class CommonViewModel actual constructor() {
      * Returns the tag associated with this viewmodel and the specified key.
      */
     open fun <T> getTag(key: String): T? {
-        run<Nothing> {
+        synchronized(mBagOfTags) {
             @Suppress("UNCHECKED_CAST")
             return mBagOfTags[key] as T?
         }
     }
 
     private fun closeWithRuntimeException(obj: Any) {
-        if (obj is CoroutineScope) {
+        if (obj is Closeable) {
             try {
-                obj.cancel()
-            } catch (e: Exception) {
+                obj.close()
+            } catch (e: IOException) {
                 throw RuntimeException(e)
             }
         }
@@ -90,7 +97,7 @@ actual abstract class CommonViewModel actual constructor() {
 
 }
 
-actual val CommonViewModel.coroutineScope: CoroutineScope
+actual val KViewModel.coroutineScope: CoroutineScope
     get() {
         val scope: CoroutineScope? = this.getTag(JOB_KEY)
         if (scope != null) {
@@ -102,8 +109,10 @@ actual val CommonViewModel.coroutineScope: CoroutineScope
         )
     }
 
-internal class CloseableCoroutineScope(context: CoroutineContext) : CoroutineScope {
-
+internal class CloseableCoroutineScope(context: CoroutineContext) : Closeable, CoroutineScope {
     override val coroutineContext: CoroutineContext = context
 
+    override fun close() {
+        coroutineContext.cancel()
+    }
 }
