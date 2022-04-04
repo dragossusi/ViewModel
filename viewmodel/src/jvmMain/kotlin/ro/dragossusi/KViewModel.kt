@@ -25,9 +25,9 @@ actual abstract class KViewModel actual constructor() {
      * It is useful when ViewModel observes some data and you need to clear this subscription to
      * prevent a leak of this ViewModel.
      */
-    protected open fun onCleared() {}
+    protected actual open fun onCleared() {}
 
-    fun clear() {
+    internal actual fun clear() {
         mCleared = true
         // Since clear() is final, this method is still called on mock objects
         // and in those cases, mBagOfTags is null. It'll always be empty though

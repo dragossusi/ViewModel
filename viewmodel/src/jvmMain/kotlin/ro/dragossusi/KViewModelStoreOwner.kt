@@ -6,5 +6,5 @@ actual interface KViewModelStoreOwner {
      *
      * @return a `ViewModelStore`
      */
-    fun getViewModelStore(): KViewModelStore
+    actual fun getViewModelStore(): KViewModelStore
 }

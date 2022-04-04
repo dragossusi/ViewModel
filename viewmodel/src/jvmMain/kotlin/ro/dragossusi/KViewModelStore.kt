@@ -1,7 +1,7 @@
 package ro.dragossusi
 
 actual class KViewModelStore {
-    private val mMap: HashMap<String, KViewModel> = HashMap<String, KViewModel>()
+    private val mMap: HashMap<String, KViewModel> = HashMap()
 
     fun put(key: String, viewModel: KViewModel) {
         mMap.put(key, viewModel)?.clear()

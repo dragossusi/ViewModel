@@ -1,0 +1,5 @@
+package ro.dragossusi
+
+import androidx.lifecycle.HasDefaultViewModelProviderFactory
+
+actual typealias KHasDefaultViewModelProviderFactory = HasDefaultViewModelProviderFactory

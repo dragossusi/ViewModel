@@ -7,6 +7,6 @@ package ro.dragossusi
  * during the configuration changes and call {@link ViewModelStore#clear()}, when this scope is
  * going to be destroyed.
  */
-expect interface KViewModelStoreOwner {
-    fun getViewModelStore(): KViewModelStore
+actual interface KViewModelStoreOwner {
+    actual fun getViewModelStore(): KViewModelStore
 }

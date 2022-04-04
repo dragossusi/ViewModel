@@ -5,7 +5,7 @@ import kotlin.coroutines.CoroutineContext
 
 private const val JOB_KEY = "androidx.lifecycle.ViewModelCoroutineScope.JOB_KEY"
 
-actual abstract class CommonViewModel actual constructor() {
+actual abstract class KViewModel actual constructor() {
     // Can't use ConcurrentHashMap, because it can lose values on old apis (see b/37042460)
     private val mBagOfTags: MutableMap<String, Any> = mutableMapOf()
 
@@ -20,7 +20,7 @@ actual abstract class CommonViewModel actual constructor() {
      */
     protected actual open fun onCleared() {}
 
-    fun clear() {
+    internal actual fun clear() {
         mCleared = true
         // Since clear() is final, this method is still called on mock objects
         // and in those cases, mBagOfTags is null. It'll always be empty though
@@ -90,7 +90,7 @@ actual abstract class CommonViewModel actual constructor() {
 
 }
 
-actual val CommonViewModel.coroutineScope: CoroutineScope
+actual val KViewModel.coroutineScope: CoroutineScope
     get() {
         val scope: CoroutineScope? = this.getTag(JOB_KEY)
         if (scope != null) {

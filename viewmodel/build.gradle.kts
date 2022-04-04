@@ -38,7 +38,7 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation("androidx.core:core-ktx:1.7.0")
-                implementation("androidx.appcompat:appcompat:1.4.0")
+                implementation("androidx.appcompat:appcompat:1.4.1")
                 api("androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}")
             }
         }
