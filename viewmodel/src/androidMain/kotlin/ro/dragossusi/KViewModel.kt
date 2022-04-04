@@ -7,7 +7,7 @@ import java.lang.reflect.Method
 
 actual abstract class KViewModel : ViewModel() {
 
-    private val clearMethod = javaClass.superclass.getDeclaredMethod("clear", *arrayOf())
+    private val clearMethod = ViewModel::class.java.getDeclaredMethod("clear")
         .apply { isAccessible = true }
 
     actual override fun onCleared() {
@@ -15,7 +15,7 @@ actual abstract class KViewModel : ViewModel() {
     }
 
     internal actual fun clear() {
-        clearMethod.invoke(this, null as Array<Any?>?)
+        clearMethod.invoke(this)
     }
 }
 
