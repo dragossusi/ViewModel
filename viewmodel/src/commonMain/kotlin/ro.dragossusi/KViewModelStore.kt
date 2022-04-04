@@ -1,3 +1,3 @@
 package ro.dragossusi
 
-expect class KViewModelStore
+expect class KViewModelStore()
